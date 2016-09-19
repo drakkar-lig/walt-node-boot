@@ -1,0 +1,47 @@
+# Notes for uploading things from SD card
+#
+# > setenv fdtfile bcm2709-rpi-2-b.dtb
+# > mmc dev 0
+# > fatload mmc 0:1 ${kernel_addr_r} kernel7.img
+# > fatload mmc 0:1 ${ramdisk_addr_r} initramfs.uImage
+# > fatload mmc 0:1 ${fdt_addr_r} ${fdtfile}
+# > setenv bootargs earlyprintk console=ttyAMA0
+# > bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
+
+setenv nfs_options "ro,nolock,nocto,noatime,nodiratime"
+setenv walt_init "/usr/local/bin/walt-init"
+
+# detect walt node type
+if test "$cpu" = "arm1176"
+then
+    setenv node_type rpi
+else
+    setexpr modelnum sub ".*([23]).*" "\\1" "${board_name}"
+    setenv node_type "rpi$modelnum"
+fi
+
+# dhcp command should not autostart tftp
+setenv autoload no
+
+# the node type is passed to the DHCP server using the VCI field
+# (vendor class identifier)
+setenv bootp_vci "$node_type"
+
+# dhcp: get our ip address and the one of next server (in variable serverip)
+dhcp || reset
+
+# retrieve the kernel
+tftp ${kernel_addr_r} ${serverip}:${ethaddr}/${node_type}/kernel || reset
+
+# retrieve the dtb (device-tree-blob) if any
+tftp ${fdt_addr_r} ${serverip}:${ethaddr}/${node_type}/dtb || setenv fdt_addr_r "-"
+
+# compute kernel command line args
+setenv nfs_bootargs "root=/dev/nfs nfsroot=${serverip}:${rootpath},${nfs_options}"
+setenv console_bootargs "console=ttyAMA0,115200 console=tty1"
+setenv other_bootargs "init=${walt_init} ip=dhcp panic=15"
+setenv bootargs "${nfs_bootargs} ${console_bootargs} ${other_bootargs}"
+
+# boot -- second argument is for the ramdisk ("-" means none)
+bootz ${kernel_addr_r} - ${fdt_addr_r} || reset
+
