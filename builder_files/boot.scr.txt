@@ -8,7 +8,6 @@
 # > setenv bootargs earlyprintk console=ttyAMA0
 # > bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
 
-setenv nfs_options "ro,nolock,nocto,noatime,nodiratime"
 setenv walt_init "/usr/local/bin/walt-init"
 
 # detect walt node type
@@ -37,11 +36,20 @@ tftp ${kernel_addr_r} ${serverip}:${ethaddr}/${node_type}/kernel || reset
 tftp ${fdt_addr_r} ${serverip}:${ethaddr}/${node_type}/dtb || setenv fdt_addr_r "-"
 
 # compute kernel command line args
-setenv nfs_bootargs "root=/dev/nfs nfsroot=${serverip}:${rootpath},${nfs_options}"
+setenv nfs_root "${serverip}:/var/lib/walt/nodes/${ethaddr}"
+setenv nfs_bootargs "root=/dev/nfs nfsroot=${nfs_root},nfsvers=3"
 setenv console_bootargs "console=ttyAMA0,115200 console=tty1"
-setenv other_bootargs "init=${walt_init} ip=dhcp panic=15"
+setenv other_bootargs "smsc95xx.macaddr=${ethaddr} init=${walt_init} ip=dhcp panic=15"
 setenv bootargs "${nfs_bootargs} ${console_bootargs} ${other_bootargs}"
 
-# boot -- second argument is for the ramdisk ("-" means none)
-bootz ${kernel_addr_r} - ${fdt_addr_r} || reset
-
+# boot
+if test ${fdt_addr_r} = '-'
+then
+    echo 'This walt image apparently has no dtb.'
+    echo 'Booting kernel...'
+    bootz ${kernel_addr_r} || reset
+else
+    echo 'Booting kernel...'
+    # second argument is for the ramdisk ("-" means none)
+    bootz ${kernel_addr_r} - ${fdt_addr_r} || reset
+fi
