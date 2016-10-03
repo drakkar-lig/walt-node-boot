@@ -13,10 +13,16 @@ setenv walt_init "/usr/local/bin/walt-init"
 # detect walt node type
 if test "$cpu" = "arm1176"
 then
-    setenv node_type rpi
+    setexpr isplus sub "[^+]*" "" "${board_name}"
+    if test "$isplus" = ""
+    then
+        setenv node_type "rpi-b"
+    else
+        setenv node_type "rpi-b-plus"
+    fi
 else
     setexpr modelnum sub ".*([23]).*" "\\1" "${board_name}"
-    setenv node_type "rpi$modelnum"
+    setenv node_type "rpi-${modelnum}-b"
 fi
 
 # dhcp command should not autostart tftp
