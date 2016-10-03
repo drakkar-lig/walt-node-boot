@@ -2,8 +2,6 @@
 eval "$(docker run waltplatform/dev-master env)"
 THIS_DIR=$(cd $(dirname $0); pwd)
 TMP_DIR=$(mktemp -d)
-UBOOT_ARCHIVE_URL="ftp://ftp.denx.de/pub/u-boot/u-boot-2016.09.tar.bz2"
-SVN_RPI_BOOT_FILES="https://github.com/raspberrypi/firmware/tags/1.20160620/boot"
 
 cd "$THIS_DIR"
 cp -rp builder_files/* $TMP_DIR
@@ -14,14 +12,14 @@ cat > Dockerfile << EOF
 FROM $DOCKER_RPI_BUILDER_IMAGE
 MAINTAINER $DOCKER_IMAGE_MAINTAINER
 
+# Download and extract u-Boot source in /opt/u-boot
+RUN $INSTALL_UBOOT_SOURCE
+
 # Download firmware files, keep the ones we need
 RUN cd /opt && svn co -q $SVN_RPI_BOOT_FILES ./boot_files && \
     cd boot_files && \
     rm -rf .svn kernel*.img
 
-# Download and extract u-Boot
-RUN cd /opt && wget -q $UBOOT_ARCHIVE_URL && tar xfj u-boot* && \
-    rm u-boot*.bz2 && mv u-boot* u-boot
 WORKDIR /opt/u-boot
 
 # create u-boot binary for rpi B+/B+
