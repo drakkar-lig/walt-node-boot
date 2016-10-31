@@ -8,32 +8,32 @@
 # > setenv bootargs earlyprintk console=ttyAMA0
 # > bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
 
-# detect walt node type
+# detect walt node model
 if test "$cpu" = "arm1176"
 then
     setexpr isplus sub "[^+]*" "" "${board_name}"
     if test "$isplus" = ""
     then
-        setenv node_type "rpi-b"
+        setenv node_model "rpi-b"
     else
-        setenv node_type "rpi-b-plus"
+        setenv node_model "rpi-b-plus"
     fi
 else
     setexpr modelnum sub ".*([23]).*" "\\1" "${board_name}"
-    setenv node_type "rpi-${modelnum}-b"
+    setenv node_model "rpi-${modelnum}-b"
 fi
 
 # dhcp command should not autostart tftp
 setenv autoload no
 
-# the node type is passed to the DHCP server using the VCI field
+# the node model is passed to the DHCP server using the VCI field
 # (vendor class identifier)
-setenv bootp_vci "$node_type"
+setenv bootp_vci "$node_model"
 
 # dhcp: get our ip address and the one of next server (in variable serverip)
 dhcp || reset
 
 # retrieve and execute the second-stage script
-tftp ${scriptaddr} ${serverip}:boot/${node_type}.uboot || reset
+tftp ${scriptaddr} ${serverip}:boot/${node_model}.uboot || reset
 source ${scriptaddr} || reset
 
