@@ -10,7 +10,9 @@ As of now (sept 2016), the following types of WalT nodes are available:
 * raspberry pi B/B+
 * raspberry pi 2 model B
 * raspberry pi 3 model B
-(The SD card built here is compatible with all listed models)
+* x86-64 pc nodes 	 (booting the USB image generated here)
+
+(The SD card built for raspberry pi is compatible with all listed models)
 
 Typing `make` in this repository allows to build docker images.
 These images are kinds of "containers" for the material needed to
