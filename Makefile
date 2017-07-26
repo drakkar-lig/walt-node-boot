@@ -1,28 +1,22 @@
 
-DOCKER_RPI_BOOT_IMAGE=$(shell docker run waltplatform/dev-master \
-							conf-get DOCKER_RPI_BOOT_IMAGE)
-DOCKER_RPI_BOOT_BUILDER_IMAGE=$(shell docker run waltplatform/dev-master \
-							conf-get DOCKER_RPI_BOOT_BUILDER_IMAGE)
+DOCKER_RPI_BOOT_BUILDER_IMAGE="waltplatform/rpi-boot-builder"
 
-all: .date_files/rpi_boot_image
+all: build/rpi-sd.dd.gz build/rpi-sd-files.tar.gz
 
-.date_files/rpi_boot_image: create_rpi_boot_image.sh .date_files/rpi_boot_builder_image
-	./create_rpi_boot_image.sh && touch $@
+# build/rpi-sd.dd.gz is the rpi sd card image file
+build/rpi-sd.dd.gz: .date_files/rpi_boot_builder_image
+	@mkdir -p build
+	@docker run --privileged -v /dev:/dev "$(DOCKER_RPI_BOOT_BUILDER_IMAGE)" > build/rpi-sd.dd.gz
 
+# to get only the files that should be replaced on the sd card partition
+# (useful when debugging), use build/rpi-sd-files.tar.gz
+build/rpi-sd-files.tar.gz: .date_files/rpi_boot_builder_image
+	@mkdir -p build
+	@docker run --privileged -v /dev:/dev "$(DOCKER_RPI_BOOT_BUILDER_IMAGE)" --tar > build/rpi-sd-files.tar.gz
+
+# the build process involves the following docker image creation
 .date_files/rpi_boot_builder_image: create_rpi_boot_builder_image.sh builder_files
-	./create_rpi_boot_builder_image.sh && touch $@
+	@mkdir -p .date_files
+	@./create_rpi_boot_builder_image.sh && touch $@
 
-publish:
-	docker push $(DOCKER_RPI_BOOT_IMAGE)
-
-# to get the files that should be replaced on the sd card partition
-# (useful when debugging)
-# $ make rpi-tar-dump > rpi-sd-files.tar.gz
-rpi-tar-dump:
-	@docker run --privileged -v /dev:/dev $(DOCKER_RPI_BOOT_BUILDER_IMAGE) --tar
-
-# to get the sd card image file
-# $ make rpi-sd-dump > rpi-sd.dd.gz
-rpi-sd-dump:
-	@docker run $(DOCKER_RPI_BOOT_IMAGE)
 

@@ -10,6 +10,7 @@ As of now (sept 2016), the following types of WalT nodes are available:
 * raspberry pi B/B+
 * raspberry pi 2 model B
 * raspberry pi 3 model B
+(The SD card built here is compatible with all listed models)
 
 Typing `make` in this repository allows to build docker images.
 These images are kinds of "containers" for the material needed to
@@ -22,15 +23,4 @@ Build the image(s):
 ```
 $ make
 ```
-
-Publish on docker hub:
-```
-$ make publish
-```
-
-Retrieve a compressed SD-card dump for a raspberry pi node:
-```
-$ make rpi-sd-dump > rpi-sd.dd.gz
-```
-This SD card dump is compatible with all raspberry models listed above.
 
