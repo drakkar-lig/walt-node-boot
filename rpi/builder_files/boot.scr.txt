@@ -11,16 +11,16 @@
 # detect walt node model
 if test "$cpu" = "arm1176"
 then
-    setexpr isplus sub "[^+]*" "" "${board_name}"
-    if test "$isplus" = ""
-    then
-        setenv node_model "rpi-b"
-    else
-        setenv node_model "rpi-b-plus"
-    fi
+    setenv node_model "rpi-b"
 else
     setexpr modelnum sub ".*([23]).*" "\\1" "${board_name}"
     setenv node_model "rpi-${modelnum}-b"
+fi
+
+setexpr isplus sub "[^+]*" "" "${board_name}"
+if test "$isplus" != ""
+then
+    setenv node_model "${node_model}-plus"
 fi
 
 # dhcp command should not autostart tftp
@@ -28,12 +28,12 @@ setenv autoload no
 
 # the node model is passed to the DHCP server using the VCI field
 # (vendor class identifier)
-setenv bootp_vci "$node_model"
+setenv bootp_vci "walt.node.$node_model"
 
 # dhcp: get our ip address and the one of next server (in variable serverip)
 dhcp || reset
 
 # retrieve and execute the second-stage script
-tftp ${scriptaddr} ${serverip}:boot/${node_model}.uboot || reset
+tftp ${scriptaddr} ${serverip}:start.uboot || reset
 source ${scriptaddr} || reset
 
