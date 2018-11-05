@@ -23,8 +23,9 @@ RUN cd /opt && svn co -q $RPI_BOOTFILES_SVN_URL ./boot_files && \
     cd boot_files && \
     rm -rf .svn kernel*.img
 
-# Add config.txt
+# Add config.txt & cmdline.txt
 ADD config.txt /opt/boot_files
+ADD cmdline.txt /opt/boot_files
 
 WORKDIR /opt/u-boot
 
