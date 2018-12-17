@@ -102,7 +102,14 @@ mkdir ipxe && cp /usr/lib/ipxe/ipxe.lkrn ipxe/
 ### the ip address.
 cat > grub/grub.cfg << EOF
 set root='(hd0,msdos1)'
-linux16 /ipxe/ipxe.lkrn set user-class walt.node.pc-x86-64 \&\& dhcp \&\& chain boot/pc-x86-64.ipxe \|\| reboot
+if cpuid -l; then
+    # CPU supports 64bit
+    set uc='walt.node.pc-x86-64'
+else
+    # CPU is 32bit only
+    set uc='walt.node.pc-x86-32'
+fi
+linux16 /ipxe/ipxe.lkrn set user-class \${uc} \&\& dhcp \&\& chain start.ipxe \|\| reboot
 boot
 EOF
 
