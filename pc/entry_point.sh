@@ -5,117 +5,68 @@
 ## to send it to docker, hence in order for it 
 ## not to contain irrelevent messages produced 
 ## during the execution of the previous commands, 
-## we need to temporarily disable stdout and stderr.
+## we need to temporarily disable stdout.
 
 ### Save stdout in file descriptor 6
 exec 6>&1 
 ### Disable stdout & stderr redirecting them to null
 exec >/dev/null 2>/dev/null
 
-## We need to create the disk image containing 
-## one partition with the ext4 file system,
-## that occupies almost all the disk,
-## as well as some unallocated space before it
-## to store mbr partition scheme and 
-## the grub, that can idetify this partition.
+### Create empty disk disk.dd
+dd of=disk.dd bs=25M seek=1 count=0
 
+### Create the partition table 
+# * 1: 12MiB, EFI partition 
+# * 2: 1MiB, Bios boot partition 
+# * 3: 8MiB, "linux-type" partition 
+sgdisk \
+    -n 1:1M:13M  -t 1:ef00 \
+    -n 2:14M:15M -t 2:ef02 \
+    -n 3:16M:24M -t 3:8e00  disk.dd
 
-### Create empty disk disk.dd with the total
-### size of 10MB, we skip 1 block of 10MB
-### and copy (write) 0 input blocks,
-### that creates empty file of 10MB,
-### which actually allocates none of them,
-### but the metadata. Since nothing is
-### actually written, the proccess is instant.
-
-dd of=disk.dd bs=10M seek=1 count=0
-
-### Creating the partition table 
-
-### Create a new empty DOS partition table (disklabel)
-### Add a new partition
-### Choose primary partition type for that partition
-### Choose partiotion number
-### Choose location of first sector of that partition (default 2048)
-### Choose location of last sector of the partiotion (default 20479)
-### Toggle a bootable flag on the partition
-### Write partition table to disk and exit
-fdisk disk.dd <<EOF
-o
-n
-p
-1
-
-
-a
-w
-EOF
-
-### Create empty disk disk.dd with the total
-### size of 9MB, we skip 9 blocks of 1MB
-### and copy (write) 0 input blocks,
-### that creates empty file of 9MB,
-### which actually allocates none of them,
-### but the metadata. Since nothing is
-### actually written, the proccess is instant.
-dd of=part.dd bs=1M seek=9 count=0
-
-### Create filesystem on the empty disk part.dd
-### specifying the type ext4.
-mkfs -t ext4 part.dd
-
-### Copying part.dd disk into disk.dd disk
-### starting from 1*1MB in disk.dd.
-dd if=part.dd of=disk.dd bs=1M seek=1 conv=notrunc,sparse
-
-mkdir part.mnt
-
-### Mount the device disk.dd to the part.mnt directory
-### specifying the start offset in bytes,
-### so that only the partiotion of 9MB would be mounted.
-mount -o offset=$((512*2048)) disk.dd part.mnt
-
-cd /root/part.mnt/
+### Setup partition 3.
+# We will start with an empty file that will
+# copy at the right offset of disk.dd
+dd of=part3.dd bs=1M seek=8 count=0
+# filesystem
+mkfs -t ext4 part3.dd
+dd if=part3.dd of=disk.dd bs=1M seek=16 conv=notrunc,sparse
+# mount
+mkdir part3.mnt
+mount -o offset=$((16*1024*1024)) disk.dd part3.mnt
+# install grub
+cd /root/part3.mnt/
 mkdir -p grub/i386-pc/
 cp /usr/lib/grub/i386-pc/* grub/i386-pc/
-
-### Install GRUB to a device with heavy custom
-### modifications, meaning breaking in two 
-### more abstraguated command grub-install.
-
-### Creating the bootable image of grub core.img 
-### specifying the type i386-pc and the directory 
-### with all the required modules.
-grub-mkimage -O i386-pc -o grub/i386-pc/core.img -d grub/i386-pc -p "(hd0,msdos1)/grub" biosdisk part_msdos ext2
-
-### Set up the device to boot using grub
-### specifying the directory with images and modules.
+grub-mkimage -O i386-pc -o grub/i386-pc/core.img -d grub/i386-pc \
+            -p "(hd0,gpt3)/grub" biosdisk part_gpt ext2
 grub-bios-setup -d ./grub/i386-pc/ ../disk.dd
-
-mkdir ipxe && cp /usr/lib/ipxe/ipxe.lkrn ipxe/
-
-### Creating custum grub configuration file
-### without menu of timeout.
-
-### Launching ipxe bootloader as it was an os
-### and passing user-class as well as getting
-### the ip address.
+# install ipxe
+mkdir ipxe && cp /root/ipxe/src/bin/ipxe.lkrn ipxe/
+# configure grub
 cat > grub/grub.cfg << EOF
-set root='(hd0,msdos1)'
-if cpuid -l; then
-    # CPU supports 64bit
-    set uc='walt.node.pc-x86-64'
-else
-    # CPU is 32bit only
-    set uc='walt.node.pc-x86-32'
-fi
-linux16 /ipxe/ipxe.lkrn set user-class \${uc} \&\& dhcp \&\& chain start.ipxe \|\| reboot
+set root='(hd0,gpt3)'
+linux16 /ipxe/ipxe.lkrn
 boot
 EOF
-
+# cleanup
 cd /root/
-### Unmounting the partition
-umount part.mnt
+umount part3.mnt
+
+### Setup partition 1.
+dd of=part1.dd bs=1M seek=12 count=0
+# filesystem
+mkfs -t vfat part1.dd
+dd if=part1.dd of=disk.dd bs=1M seek=1 conv=notrunc,sparse
+# mount
+mkdir part1.mnt
+mount -o offset=$((1*1024*1024)) disk.dd part1.mnt
+# copy efi ipxe images
+mkdir -p part1.mnt/EFI/BOOT/
+cp /root/ipxe/src/bin-i386-efi/ipxe.efi part1.mnt/EFI/BOOT/BOOTIA32.efi && \
+cp /root/ipxe/src/bin-x86_64-efi/ipxe.efi part1.mnt/EFI/BOOT/BOOTX64.efi
+# cleanup
+umount part1.mnt
 
 ### Restore stdout from file descriptor 6
 exec 1>&6

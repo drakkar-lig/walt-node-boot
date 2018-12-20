@@ -24,7 +24,7 @@ build/pc-usb.dd.gz: .date_files/pc_boot_builder_image
 				gzip > build/pc-usb.dd.gz
 
 # pc build process involves the following docker image creation
-.date_files/pc_boot_builder_image: pc/Dockerfile pc/entry_point.sh
+.date_files/pc_boot_builder_image: pc/Dockerfile pc/entry_point.sh pc/boot.ipxe
 	@mkdir -p .date_files
 	@cd ./pc && docker build -t waltplatform/pc-boot-builder . && cd .. && touch $@
 

@@ -1,0 +1,9 @@
+#!ipxe
+
+echo "WALT -- IPXE STARTUP"
+
+# detect appropriate walt node model (64-bit CPU or not)
+cpuid --ext 29 && set user-class walt.node.pc-x86-64 || set user-class walt.node.pc-x86-32
+
+# network boot
+dhcp && chain start.ipxe || reboot
