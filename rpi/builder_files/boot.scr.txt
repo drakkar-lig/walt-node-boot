@@ -13,7 +13,7 @@ if test "$cpu" = "arm1176"
 then
     setenv node_model "rpi-b"
 else
-    setexpr modelnum sub ".*([23]).*" "\\1" "${board_name}"
+    setexpr modelnum sub ".*([234]).*" "\\1" "${board_name}"
     setenv node_model "rpi-${modelnum}-b"
 fi
 

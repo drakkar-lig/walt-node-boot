@@ -1,6 +1,6 @@
 #!/bin/bash
-UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2018.07.tar.bz2'
-RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20160620/boot'
+UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2020.04.tar.bz2'
+RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20200212/boot'
 
 THIS_DIR=$(cd $(dirname $0); pwd)
 TMP_DIR=$(mktemp -d)
@@ -29,7 +29,7 @@ ADD cmdline.txt /opt/boot_files
 
 WORKDIR /opt/u-boot
 
-# create u-boot binary for rpi B+/B+
+# create u-boot binary for rpi B/B+
 # name it kernel.img on the SD card
 # (default name for rpi B/B+ when config.txt does not specify it)
 RUN make rpi_defconfig && make && \
@@ -43,6 +43,11 @@ RUN make rpi_defconfig && make && \
 # (default name for rpi 2 & 3 when config.txt does not specify it)
 RUN make rpi_3_32b_defconfig && make && \
     cp u-boot.bin /opt/boot_files/kernel7.img && \
+    make clean
+
+# create u-boot binary for rpi 4
+RUN make rpi_4_32b_defconfig && make && \
+    cp u-boot.bin /opt/boot_files/kernel7l.img && \
     make clean
 
 # create u-boot startup script
