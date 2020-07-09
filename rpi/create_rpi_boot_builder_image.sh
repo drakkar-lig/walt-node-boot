@@ -1,5 +1,5 @@
 #!/bin/bash
-UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2020.04.tar.bz2'
+UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2020.07.tar.bz2'
 RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20200212/boot'
 
 THIS_DIR=$(cd $(dirname $0); pwd)
@@ -17,6 +17,8 @@ MAINTAINER Etienne Duble <etienne.duble@imag.fr>
 # Download and extract u-Boot source in /opt/u-boot
 RUN cd /opt && wget -q $UBOOT_BZ2_ARCHIVE_URL && tar xf u-boot* && \
                 rm u-boot*.bz2 && mv u-boot* u-boot
+# Add the fix for rpi4 ethernet driver (not upstreamed yet)
+ADD bcmgenet.c /opt/u-boot/drivers/net/
 
 # Download firmware files, keep the ones we need
 RUN cd /opt && svn co -q $RPI_BOOTFILES_SVN_URL ./boot_files && \
@@ -32,7 +34,7 @@ WORKDIR /opt/u-boot
 # create u-boot binary for rpi B/B+
 # name it kernel.img on the SD card
 # (default name for rpi B/B+ when config.txt does not specify it)
-RUN make rpi_defconfig && make && \
+RUN make rpi_defconfig && make -j && \
     cp u-boot.bin /opt/boot_files/kernel.img && \
     cp tools/mkimage /tmp && \
     make clean
@@ -41,12 +43,12 @@ RUN make rpi_defconfig && make && \
 # rpi_3_32b_defconfig works on both cards, thus
 # we can name it kernel7.img on the SD card
 # (default name for rpi 2 & 3 when config.txt does not specify it)
-RUN make rpi_3_32b_defconfig && make && \
+RUN make rpi_3_32b_defconfig && make -j && \
     cp u-boot.bin /opt/boot_files/kernel7.img && \
     make clean
 
 # create u-boot binary for rpi 4
-RUN make rpi_4_32b_defconfig && make && \
+RUN make rpi_4_32b_defconfig && make -j && \
     cp u-boot.bin /opt/boot_files/kernel7l.img && \
     make clean
 
