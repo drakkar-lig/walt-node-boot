@@ -1,6 +1,6 @@
 #!/bin/bash
 UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2020.07.tar.bz2'
-RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20200212/boot'
+RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20200723/boot'
 
 THIS_DIR=$(cd $(dirname $0); pwd)
 TMP_DIR=$(mktemp -d)
