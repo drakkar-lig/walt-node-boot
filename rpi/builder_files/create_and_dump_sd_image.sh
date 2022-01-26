@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 if [ "$1" == "--tar" ]
 then
     MODE=tar
@@ -44,7 +44,7 @@ else
     dd if=/dev/zero of=$IMAGE_FILE count=$needed_size_megabytes bs=1M 2>/dev/null
 
     # create partition
-    fdisk $IMAGE_FILE 2>/dev/null << EOF
+    fdisk $IMAGE_FILE << EOF
 n
 p
 1
