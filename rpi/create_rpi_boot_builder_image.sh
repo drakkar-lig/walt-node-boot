@@ -11,8 +11,20 @@ cp -rp builder_files/* $TMP_DIR
 cd $TMP_DIR
 
 cat > Dockerfile << EOF
-FROM waltplatform/rpi-builder
+FROM debian:bullseye as builder
 MAINTAINER Etienne Duble <etienne.duble@imag.fr>
+
+# setup package management
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+# install packages
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    vim net-tools procps subversion make gcc g++ libncurses5-dev bzip2 \
+    wget cpio python unzip bc kpartx dosfstools debootstrap debian-archive-keyring \
+    git flex bison pkg-config zlib1g-dev libglib2.0-dev \
+    libpixman-1-dev gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu libssl-dev kmod \
+    dpkg-dev debhelper bash-completion shellcheck rdfind fdisk && \
+    apt-get clean
 
 # Download and extract u-Boot source in /opt/u-boot
 RUN cd /opt && wget -q $UBOOT_BZ2_ARCHIVE_URL && tar xf u-boot* && \
@@ -31,25 +43,28 @@ ADD cmdline.txt /opt/boot_files
 
 WORKDIR /opt/u-boot
 
-# create u-boot binary for rpi B/B+
-# name it kernel.img on the SD card
-# (default name for rpi B/B+ when config.txt does not specify it)
+ENV ARCH=arm
+ENV CROSS_COMPILE=arm-linux-gnueabi-
+
+# create u-boot binary for rpi b and b+
 RUN make rpi_defconfig && make -j && \
-    cp u-boot.bin /opt/boot_files/kernel.img && \
+    cp u-boot.bin /opt/boot_files/kernel-rpi-b.img && \
     cp tools/mkimage /tmp && \
     make clean
 
-# create u-boot binary for rpi 2 and rpi 3
-# rpi_3_32b_defconfig works on both cards, thus
-# we can name it kernel7.img on the SD card
-# (default name for rpi 2 & 3 when config.txt does not specify it)
+# create u-boot binary for rpi 2b
+RUN make rpi_2_defconfig && make -j && \
+    cp u-boot.bin /opt/boot_files/kernel-rpi-2-b.img && \
+    make clean
+
+# create u-boot binary for rpi 3b and 3b+
 RUN make rpi_3_32b_defconfig && make -j && \
-    cp u-boot.bin /opt/boot_files/kernel7.img && \
+    cp u-boot.bin /opt/boot_files/kernel-rpi-3-b.img && \
     make clean
 
 # create u-boot binary for rpi 4
 RUN make rpi_4_32b_defconfig && make -j && \
-    cp u-boot.bin /opt/boot_files/kernel7l.img && \
+    cp u-boot.bin /opt/boot_files/kernel-rpi-4-b.img && \
     make clean
 
 # create u-boot startup script
