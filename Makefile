@@ -1,5 +1,5 @@
 
-all: build/rpi-sd.dd.gz build/rpi-sd-files.tar.gz build/pc-usb.dd.gz
+all: build/rpi-sd.dd.gz build/rpi-sd-files.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
 
 # build/rpi-sd.dd.gz is the rpi sd card image file
 build/rpi-sd.dd.gz: .date_files/rpi_boot_builder_image
@@ -27,4 +27,17 @@ build/pc-usb.dd.gz: .date_files/pc_boot_builder_image
 .date_files/pc_boot_builder_image: pc/Dockerfile pc/entry_point.sh pc/boot.ipxe
 	@mkdir -p .date_files
 	@cd ./pc && docker build -t waltplatform/pc-boot-builder . && cd .. && touch $@
+
+# build/walt-x86-undionly.kpxe is the compressed ipxe image to serve through TFTP to standard PXE nodes
+# it should be copied to repository walt-python-packages at path:
+# server/walt/server/threads/main/network/walt-x86-undionly.kpxe
+build/walt-x86-undionly.kpxe: .date_files/x86_pxe_boot_builder_image
+	@mkdir -p build
+	@docker run --rm --entrypoint /root/entry_point.sh waltplatform/x86-pxe-boot-builder \
+				> build/walt-x86-undionly.kpxe
+
+# x86-pxe build process involves the following docker image creation
+.date_files/x86_pxe_boot_builder_image: x86-pxe/Dockerfile x86-pxe/entry_point.sh x86-pxe/boot.ipxe
+	@mkdir -p .date_files
+	@cd ./x86-pxe && docker build -t waltplatform/x86-pxe-boot-builder . && cd .. && touch $@
 
