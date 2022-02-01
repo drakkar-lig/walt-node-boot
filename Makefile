@@ -13,7 +13,7 @@ build/rpi-sd-files.tar.gz: .date_files/rpi_boot_builder_image
 	@docker run --rm --privileged -v /dev:/dev waltplatform/rpi-boot-builder --tar > build/rpi-sd-files.tar.gz
 
 # rpi build process involves the following docker image creation
-.date_files/rpi_boot_builder_image: rpi/create_rpi_boot_builder_image.sh rpi/builder_files
+.date_files/rpi_boot_builder_image: rpi/create_rpi_boot_builder_image.sh rpi/Dockerfile rpi/builder_files
 	@mkdir -p .date_files
 	@./rpi/create_rpi_boot_builder_image.sh && touch $@
 

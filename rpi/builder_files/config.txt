@@ -27,16 +27,17 @@ dtparam=poe_fan_temp3=78000,poe_fan_temp3_hyst=2000
 # kernels (actually u-boot binaries)
 # note: pi1+ is not mentioned in the doc, so model rpi-b-plus
 # might actually match the [pi1] section. however, in our case,
-# both models point to the same kernel.
+# both models point to the same u-boot binary.
+
 [pi1]
-kernel=kernel-rpi-b.img
+kernel=u-boot-rpi-b.img
 [pi1+]
-kernel=kernel-rpi-b.img
+kernel=u-boot-rpi-b.img
 [pi2]
-kernel=kernel-rpi-2-b.img
+kernel=u-boot-rpi-2-b.img
 [pi3]
-kernel=kernel-rpi-3-b.img
+kernel=u-boot-rpi-3-b.img
 [pi3+]
-kernel=kernel-rpi-3-b.img
+kernel=u-boot-rpi-3-b.img
 [pi4]
-kernel=kernel-rpi-4-b.img
+kernel=u-boot-rpi-4-b.img

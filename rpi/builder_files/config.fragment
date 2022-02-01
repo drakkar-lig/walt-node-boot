@@ -1,0 +1,26 @@
+# We want u-boot binaries (for model 3b and later) to work when the node is booting
+# without a SD card. In this case u-boot binary is retrieved by the board firmware
+# using tftp, and when executed this u-boot binary should be able to retrieve
+# boot.scr.uimg from tftp too. U-boot default boot script, as specified in env
+# variable distro_bootcmd, tries to boot from "mmc0", then "mmc1", then "pxe", then
+# "dhcp". "pxe" is a standard PXE process, thus not what we want, and it will be long
+# to fail because it will try many different kernel names, based on mac address or
+# pxelinux default names. "dhcp" is the procedure we want, which will download
+# boot.scr.uimg from tftp and execute it. Setting bootcmd_pxe to value false allows
+# to avoid this long failing "pxe" procedure and start the "dhcp" procedure early
+# when no SD card is available.
+
+CONFIG_BOOTCOMMAND="setenv bootcmd_pxe false; run distro_bootcmd"
+
+# Up to now (january 2022), default configs for rpi boards embed the device tree
+# inside the u-boot binary. This causes issues when one wants to change device tree
+# configuration in config.txt, for instance by adding "dtoverlay=<overlay>". In this
+# default configuration, since u-boot has its own embedded device tree, such a change
+# in the device tree will not be seen by u-boot, which may cause problems (boot hanging,
+# perhaps when trying to initialize devices that have been disabled or configured
+# differently).
+# The following setting allows to let the board firmware properly pass the device tree
+# to u-boot.
+
+# CONFIG_OF_EMBED is not set
+CONFIG_OF_BOARD=y
