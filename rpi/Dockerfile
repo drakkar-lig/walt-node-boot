@@ -1,7 +1,10 @@
 FROM debian:bullseye as builder
 MAINTAINER Etienne Duble <etienne.duble@imag.fr>
 ENV UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2022.01.tar.bz2'
-ENV RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20200723/boot'
+ENV RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20220120/boot'
+ENV RPI_EEPROM_SVN_URL='https://github.com/raspberrypi/rpi-eeprom'
+ENV RPI_EEPROM_FIRMWARE='firmware/stable/pieeprom-2022-02-08.bin'
+ENV RPI_EEPROM_RECOVERY_BIN='firmware/stable/recovery.bin'
 
 # setup package management
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -67,6 +70,15 @@ RUN make rpi_4_32b_defconfig && \
 ADD builder_files/boot.scr.txt /tmp
 RUN /tmp/mkimage -A arm -O linux -T script -C none -n boot.scr \
          -d /tmp/boot.scr.txt /opt/boot_files/boot.scr.uimg
+
+# prepare rpi4 eeprom auto-update files
+RUN cd /opt && git clone $RPI_EEPROM_SVN_URL ./rpi-eeprom && \
+    cd rpi-eeprom && \
+    rm -rf .git
+WORKDIR /opt/rpi-eeprom
+ADD builder_files/rpi-eeprom-auto-update.sh .
+RUN ./rpi-eeprom-auto-update.sh \
+    $RPI_EEPROM_FIRMWARE $RPI_EEPROM_RECOVERY_BIN /opt/boot_files
 
 # add release date file
 RUN date > /opt/boot_files/walt.date && \
