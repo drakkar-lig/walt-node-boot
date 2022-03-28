@@ -3,10 +3,10 @@ rpi_eeprom_firmware="$1"
 rpi_eeprom_recovery_bin="$2"
 out_dir="$3"
 
-# Try SD card first, then network, and repeat.
+# Try network first, then SD card, and repeat.
 # read right to left, and see:
 # https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER
-BOOT_ORDER=0xf21
+BOOT_ORDER=0xf12
 
 # Retrieve boot config embedded in firmware
 ./rpi-eeprom-config "$rpi_eeprom_firmware" > /tmp/bootconf.txt
