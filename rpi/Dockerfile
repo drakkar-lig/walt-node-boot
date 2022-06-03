@@ -40,7 +40,7 @@ ENV CROSS_COMPILE=arm-linux-gnueabi-
 # create u-boot binary for rpi b and b+
 RUN make rpi_defconfig && \
     ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j && \
+    make -j $(nproc) && \
     cp u-boot.bin /opt/boot_files/u-boot-rpi-b.img && \
     cp tools/mkimage /tmp && \
     make clean
@@ -48,21 +48,21 @@ RUN make rpi_defconfig && \
 # create u-boot binary for rpi 2b
 RUN make rpi_2_defconfig && \
     ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j && \
+    make -j $(nproc) && \
     cp u-boot.bin /opt/boot_files/u-boot-rpi-2-b.img && \
     make clean
 
 # create u-boot binary for rpi 3b and 3b+
 RUN make rpi_3_32b_defconfig && \
     ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j && \
+    make -j $(nproc) && \
     cp u-boot.bin /opt/boot_files/u-boot-rpi-3-b.img && \
     make clean
 
 # create u-boot binary for rpi 4
 RUN make rpi_4_32b_defconfig && \
     ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j && \
+    make -j $(nproc) && \
     cp u-boot.bin /opt/boot_files/u-boot-rpi-4-b.img && \
     make clean
 

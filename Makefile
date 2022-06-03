@@ -26,7 +26,7 @@ build/pc-usb.dd.gz: .date_files/pc_boot_builder_image
 # pc build process involves the following docker image creation
 .date_files/pc_boot_builder_image: pc/Dockerfile pc/entry_point.sh pc/boot.ipxe
 	@mkdir -p .date_files
-	@cd ./pc && docker build -t waltplatform/pc-boot-builder . && cd .. && touch $@
+	@cd ./pc && nice docker build -t waltplatform/pc-boot-builder . && cd .. && touch $@
 
 # build/walt-x86-undionly.kpxe is the compressed ipxe image to serve through TFTP to standard PXE nodes
 # it should be copied to repository walt-python-packages at path:
@@ -39,5 +39,5 @@ build/walt-x86-undionly.kpxe: .date_files/x86_pxe_boot_builder_image
 # x86-pxe build process involves the following docker image creation
 .date_files/x86_pxe_boot_builder_image: x86-pxe/Dockerfile x86-pxe/entry_point.sh x86-pxe/boot.ipxe
 	@mkdir -p .date_files
-	@cd ./x86-pxe && docker build -t waltplatform/x86-pxe-boot-builder . && cd .. && touch $@
+	@cd ./x86-pxe && nice docker build -t waltplatform/x86-pxe-boot-builder . && cd .. && touch $@
 

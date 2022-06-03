@@ -17,9 +17,9 @@ ADD boot.ipxe /root/
 WORKDIR /root
 RUN git clone git://git.ipxe.org/ipxe.git && cd ipxe && \
     git checkout d79f504c0c390d40de3d27546ab27bc44b03516c
-RUN cd ipxe/src && make -j bin/ipxe.lkrn EMBED=/root/boot.ipxe
-RUN cd ipxe/src && make -j bin-x86_64-efi/ipxe.efi EMBED=/root/boot.ipxe
-RUN cd ipxe/src && make -j bin-i386-efi/ipxe.efi EMBED=/root/boot.ipxe
+RUN cd ipxe/src && make -j $(nproc) bin/ipxe.lkrn EMBED=/root/boot.ipxe
+RUN cd ipxe/src && make -j $(nproc) bin-x86_64-efi/ipxe.efi EMBED=/root/boot.ipxe
+RUN cd ipxe/src && make -j $(nproc) bin-i386-efi/ipxe.efi EMBED=/root/boot.ipxe
 
 # Adding the entrypoint script to the image
 ADD entry_point.sh /root/
