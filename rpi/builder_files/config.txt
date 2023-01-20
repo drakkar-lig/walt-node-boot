@@ -24,6 +24,10 @@ dtparam=poe_fan_temp1=73000,poe_fan_temp1_hyst=3000
 dtparam=poe_fan_temp2=76000,poe_fan_temp2_hyst=2000
 dtparam=poe_fan_temp3=78000,poe_fan_temp3_hyst=2000
 
+# Let the firmware enable the watchdog before starting u-boot
+
+dtparam=watchdog=on
+
 # kernels (actually u-boot binaries)
 # note: pi1+ is not mentioned in the doc, so model rpi-b-plus
 # might actually match the [pi1] section. however, in our case,

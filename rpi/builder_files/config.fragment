@@ -1,16 +1,18 @@
-# We want u-boot binaries (for model 3b and later) to work when the node is booting
-# without a SD card. In this case u-boot binary is retrieved by the board firmware
-# using tftp, and when executed this u-boot binary should be able to retrieve
-# boot.scr.uimg from tftp too. U-boot default boot script, as specified in env
-# variable distro_bootcmd, tries to boot from "mmc0", then "mmc1", then "pxe", then
-# "dhcp". "pxe" is a standard PXE process, thus not what we want, and it will be long
-# to fail because it will try many different kernel names, based on mac address or
-# pxelinux default names. "dhcp" is the procedure we want, which will download
-# boot.scr.uimg from tftp and execute it. Setting bootcmd_pxe to value false allows
-# to avoid this long failing "pxe" procedure and start the "dhcp" procedure early
-# when no SD card is available.
+# The command must not contain double quotes, which is quite limitating.
+# Here are the steps we are doing:
+# - computing the node_model variable given the fact the fdtfile variable
+#   has the form "bcm<...>-<node_model>.dtb". <node_model> is for instance
+#   rpi-2-b or rpi-b-plus. Since it is not possible to use double quotes,
+#   we cannot write an empty replacement patterns (i.e, ""), but we leverage
+#   the fact all models start with a 'r' and end with a 'b' or a 's'.
+# - we set the bootp_vci according to the node model and start the DHCP + TFTP
+#   transfers. We first try to download a FIT image 'fit.uboot', allowing to
+#   reduce the procedure to this single network file transfer. It this works,
+#   we call the script embedded in this FIT image. Otherwise, for older images,
+#   we fallback to the legacy procedure based on start.uboot.
 
-CONFIG_BOOTCOMMAND="setenv bootcmd_pxe false; run distro_bootcmd"
+
+CONFIG_BOOTCOMMAND="setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; setenv has_wget 1; if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; else reset; fi"
 
 # Up to now (january 2022), default configs for rpi boards embed the device tree
 # inside the u-boot binary. This causes issues when one wants to change device tree
@@ -24,3 +26,28 @@ CONFIG_BOOTCOMMAND="setenv bootcmd_pxe false; run distro_bootcmd"
 
 # CONFIG_OF_EMBED is not set
 CONFIG_OF_BOARD=y
+
+# If ever u-boot starts a command line shell, reset the board to retry booting
+# after 15 seconds have passed and no input command was typed.
+CONFIG_BOOT_RETRY=y
+CONFIG_BOOT_RETRY_TIME=15
+CONFIG_BOOT_RETRY_MIN=15
+CONFIG_RESET_TO_RETRY=y
+
+# We enable FIT images.
+CONFIG_FIT=y
+CONFIG_FIT_VERBOSE=y
+
+# We enable the board watchdog
+CONFIG_WATCHDOG=y
+CONFIG_WATCHDOG_AUTOSTART=y
+CONFIG_WATCHDOG_TIMEOUT_MSECS=15000
+CONFIG_WDT=y
+CONFIG_WDT_BCM2835=y
+
+# We add a few shell commands
+CONFIG_CMD_WDT=y
+CONFIG_CMD_WGET=y
+
+# This option improves wget transfer speed
+CONFIG_PROT_TCP_SACK=y
