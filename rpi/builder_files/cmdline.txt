@@ -1,1 +1,1 @@
-console=serial0,115200 console=tty1 u-boot:use_fit u-boot:use_wget
+console=serial0,115200 console=tty1 u-boot:use_fit
