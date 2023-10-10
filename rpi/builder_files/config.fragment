@@ -13,7 +13,7 @@
 #   we fallback to the legacy procedure based on start.uboot.
 
 
-CONFIG_BOOTCOMMAND="setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; setenv has_wget 1; if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; else reset; fi"
+CONFIG_BOOTCOMMAND="setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; else reset; fi"
 
 # Up to now (january 2022), default configs for rpi boards embed the device tree
 # inside the u-boot binary. This causes issues when one wants to change device tree
@@ -48,7 +48,19 @@ CONFIG_WDT_BCM2835=y
 
 # We add a few shell commands
 CONFIG_CMD_WDT=y
-CONFIG_CMD_WGET=y
 
+# Note (october 2023): we disabled WGET and TCP because the implementation is
+# too minimalistic and broken. Notably, the code manages a single state machine,
+# for all connections; a given connection may be interrupted by an unrelated
+# RST packet sent by the server. This is the case for instance after a "walt
+# node reboot", when the keepalive setting of the connection established for
+# bootup notification the last time the node was up reaches its timeout.
+# And it is even worse: such a TCP RST packet will make any network operation
+# fail, even if this operation, such as a TFTP transfer, is UDP-based!
+# To make it clear: as of now, october 2023, activating WGET activates TCP
+# which will cause this kind of problems *even if wget is actually not used*.
+# If re-enabling this, in the future, add "setenv has_wget 1" to CONFIG BOOTCOMMAND.
+
+# CONFIG_CMD_WGET is not set
 # This option improves wget transfer speed
-CONFIG_PROT_TCP_SACK=y
+#CONFIG_PROT_TCP_SACK=y
