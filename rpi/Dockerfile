@@ -1,12 +1,11 @@
 FROM debian:bullseye as builder
 MAINTAINER Etienne Duble <etienne.duble@imag.fr>
-#ENV UBOOT_BZ2_ARCHIVE_URL='ftp://ftp.denx.de/pub/u-boot/u-boot-2023.01.tar.bz2'
-ENV UBOOT_GIT_REPO='https://github.com/drakkar-lig/u-boot'
-ENV UBOOT_GIT_BRANCH='v2023.01-bcm2835-wdt'
-ENV RPI_BOOTFILES_SVN_URL='https://github.com/raspberrypi/firmware/tags/1.20230106/boot'
+ENV UBOOT_BZ2_ARCHIVE_URL='https://ftp.denx.de/pub/u-boot/u-boot-2023.10.tar.bz2'
+ENV RPI_BOOTFILES_GIT_REPO='https://github.com/raspberrypi/firmware'
+ENV RPI_BOOTFILES_GIT_COMMIT='a3b20e7dd41aa174ae50b872c8c9c66beafd63e2'
 ENV RPI_EEPROM_SVN_URL='https://github.com/raspberrypi/rpi-eeprom'
-ENV RPI_EEPROM_FIRMWARE='firmware/stable/pieeprom-2023-01-11.bin'
-ENV RPI_EEPROM_RECOVERY_BIN='firmware/stable/recovery.bin'
+ENV RPI_EEPROM_FIRMWARE='firmware-2711/latest/pieeprom-2023-05-11.bin'
+ENV RPI_EEPROM_RECOVERY_BIN='firmware-2711/latest/recovery.bin'
 
 # setup package management
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -21,16 +20,17 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     apt-get clean
 
 # Download and extract u-Boot source in /opt/u-boot
-#wget -q $UBOOT_BZ2_ARCHIVE_URL && tar xf u-boot* && \
-#                rm u-boot*.bz2 && mv u-boot* u-boot
-RUN cd /opt && git clone $UBOOT_GIT_REPO && \
-               cd u-boot && \
-               git checkout $UBOOT_GIT_BRANCH
+RUN cd /opt && wget -q $UBOOT_BZ2_ARCHIVE_URL && tar xf u-boot* && \
+                rm u-boot*.bz2 && mv u-boot* u-boot
 
 # Download firmware files, keep the ones we need
-RUN cd /opt && svn co -q $RPI_BOOTFILES_SVN_URL ./boot_files && \
-    cd boot_files && \
-    rm -rf .svn kernel*.img
+RUN cd /opt && mkdir boot_files_download && cd boot_files_download && \
+    git init && git remote add origin "$RPI_BOOTFILES_GIT_REPO" && \
+    git fetch --depth 1 origin "$RPI_BOOTFILES_GIT_COMMIT" && \
+    git checkout "$RPI_BOOTFILES_GIT_COMMIT" && \
+    mv boot ../boot_files && cd ../boot_files && \
+    rm -rf ../boot_files_download && \
+    rm -rf kernel*.img
 
 # Add config.txt & cmdline.txt
 ADD builder_files/config.txt /opt/boot_files
