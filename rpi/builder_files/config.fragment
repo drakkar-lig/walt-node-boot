@@ -15,6 +15,12 @@
 
 CONFIG_BOOTCOMMAND="setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; else reset; fi"
 
+# Disallow interrupting the boot by pressing a key (value = -2).
+# When linking the serial line of two raspberry pi boards, for letting one board
+# monitor the serial line of the other, u-boot could be interrupted by serial logs
+# written by the other board.
+CONFIG_BOOTDELAY=-2
+
 # Up to now (january 2022), default configs for rpi boards embed the device tree
 # inside the u-boot binary. This causes issues when one wants to change device tree
 # configuration in config.txt, for instance by adding "dtoverlay=<overlay>". In this
