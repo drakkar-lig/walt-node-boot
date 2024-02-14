@@ -30,7 +30,9 @@ RUN cd /opt && mkdir boot_files_download && cd boot_files_download && \
     git checkout "$RPI_BOOTFILES_GIT_COMMIT" && \
     mv boot ../boot_files && cd ../boot_files && \
     rm -rf ../boot_files_download && \
-    rm -rf kernel*.img
+    rm -rf kernel*.img \
+           start*x.elf start*cd.elf start*db.elf \
+           fixup*x.dat fixup*cd.dat fixup*db.dat
 
 # Add config.txt & cmdline.txt
 ADD builder_files/config.txt /opt/boot_files
