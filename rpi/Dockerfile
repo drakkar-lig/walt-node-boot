@@ -44,6 +44,16 @@ ADD builder_files/config.fragment .
 ENV ARCH=arm
 ENV CROSS_COMPILE=arm-linux-gnueabi-
 
+# patch u-boot --
+# u-boot hangs on rpi4 at SE when enumerating PCI devices.
+# the same problem was found with the home assistant project, and
+# they soved it by reverting a u-boot commit.
+# https://github.com/home-assistant/operating-system/issues/2500
+# https://github.com/home-assistant/operating-system/pull/2505/commits/1725030de7d7cf94fe38e8bdf4c52f2af766164f
+# we do the same here.
+ADD builder_files/pci-enumeration.patch /opt/u-boot/
+RUN patch -i pci-enumeration.patch drivers/pci/pci-uclass.c
+
 # create u-boot binary for rpi b and b+
 RUN make rpi_defconfig && \
     ./scripts/kconfig/merge_config.sh .config config.fragment && \

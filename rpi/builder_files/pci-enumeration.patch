@@ -1,0 +1,26 @@
+--- drivers/pci/pci-uclass.c.orig	2024-02-14 15:18:16.785201889 +0000
++++ drivers/pci/pci-uclass.c	2024-02-14 15:19:54.601230465 +0000
+@@ -1039,22 +1039,7 @@
+ 
+ 		if (!IS_ENABLED(CONFIG_SYS_PCI_64BIT) &&
+ 		    type == PCI_REGION_MEM && upper_32_bits(pci_addr)) {
+-			debug(" - pci_addr beyond the 32-bit boundary, ignoring\n");
+-			continue;
+-		}
+-
+-		if (!IS_ENABLED(CONFIG_PHYS_64BIT) && upper_32_bits(addr)) {
+-			debug(" - addr beyond the 32-bit boundary, ignoring\n");
+-			continue;
+-		}
+-
+-		if (~((pci_addr_t)0) - pci_addr < size) {
+-			debug(" - PCI range exceeds max address, ignoring\n");
+-			continue;
+-		}
+-
+-		if (~((phys_addr_t)0) - addr < size) {
+-			debug(" - phys range exceeds max address, ignoring\n");
++			debug(" - beyond the 32-bit boundary, ignoring\n");
+ 			continue;
+ 		}
+ 
