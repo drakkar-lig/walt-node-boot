@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:bullseye
 
 # Making the process completely noninteractive
 ENV DEBIAN_FRONTEND noninteractive
