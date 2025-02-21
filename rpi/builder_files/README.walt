@@ -1,0 +1,12 @@
+
+The "debug" variant of u-boot binaries enables the startup countdown allowing to
+interrupt the boot and get an u-boot interactive shell.
+
+It also enables a net console in u-boot. Packets are sent to ${serverip}
+(aka the DHCP server IP, thus the WALT server) on UDP port 6666.
+
+On server side, use this:
+$ apt update && apt install -y socat
+$ wget https://raw.githubusercontent.com/u-boot/u-boot/refs/heads/master/tools/netconsole
+$ chmod +x netconsole
+$ ./netconsole <node-ip>

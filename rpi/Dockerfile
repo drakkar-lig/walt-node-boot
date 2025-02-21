@@ -34,12 +34,15 @@ RUN cd /opt && mkdir boot_files_download && cd boot_files_download && \
            start*x.elf start*cd.elf start*db.elf \
            fixup*x.dat fixup*cd.dat fixup*db.dat
 
-# Add config.txt & cmdline.txt
+# Add static files to boot_files
 ADD builder_files/config.txt /opt/boot_files
 ADD builder_files/cmdline.txt /opt/boot_files
+ADD builder_files/README.walt /opt/boot_files
 
 WORKDIR /opt/u-boot
 ADD builder_files/config.fragment .
+ADD builder_files/config-debug.fragment .
+ADD builder_files/compile-uboot.sh .
 
 ENV ARCH=arm
 ENV CROSS_COMPILE=arm-linux-gnueabi-
@@ -55,33 +58,16 @@ ADD builder_files/pci-enumeration.patch /opt/u-boot/
 RUN patch -i pci-enumeration.patch drivers/pci/pci-uclass.c
 
 # create u-boot binary for rpi b and b+
-RUN make rpi_defconfig && \
-    ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j $(nproc) && \
-    cp u-boot.bin /opt/boot_files/u-boot-rpi-b.img && \
-    cp tools/mkimage /tmp && \
-    make clean
+RUN ./compile-uboot.sh rpi-b rpi_defconfig -- cp tools/mkimage /tmp
 
 # create u-boot binary for rpi 2b
-RUN make rpi_2_defconfig && \
-    ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j $(nproc) && \
-    cp u-boot.bin /opt/boot_files/u-boot-rpi-2-b.img && \
-    make clean
+RUN ./compile-uboot.sh rpi-2-b rpi_2_defconfig
 
 # create u-boot binary for rpi 3b and 3b+
-RUN make rpi_3_32b_defconfig && \
-    ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j $(nproc) && \
-    cp u-boot.bin /opt/boot_files/u-boot-rpi-3-b.img && \
-    make clean
+RUN ./compile-uboot.sh rpi-3-b rpi_3_32b_defconfig
 
 # create u-boot binary for rpi 4
-RUN make rpi_4_32b_defconfig && \
-    ./scripts/kconfig/merge_config.sh .config config.fragment && \
-    make -j $(nproc) && \
-    cp u-boot.bin /opt/boot_files/u-boot-rpi-4-b.img && \
-    make clean
+RUN ./compile-uboot.sh rpi-4-b rpi_4_32b_defconfig
 
 # prepare rpi4 eeprom auto-update files
 RUN cd /opt && git clone $RPI_EEPROM_SVN_URL ./rpi-eeprom && \

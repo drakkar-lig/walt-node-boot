@@ -1,0 +1,9 @@
+# Config fragment for compiling a u-boot variant suitable for debugging.
+
+# Let the user interrupt u-boot at the very beginning
+CONFIG_BOOTDELAY=5
+# CONFIG_BOOT_RETRY is not set
+
+# Enable a netconsole
+CONFIG_NETCONSOLE=y
+CONFIG_PREBOOT="usb start; env set autoload no; dhcp; env set autoload yes; env set ncip ${serverip}; consoles=serial,vidconsole,nc; env set stdout $consoles; env set stderr $consoles; env set stdin $consoles;"
