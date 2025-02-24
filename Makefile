@@ -1,16 +1,20 @@
 
-all: build/rpi-sd.dd.gz build/rpi-sd-files.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
+all: build/rpi-sd-files.tar.gz build/rpi-4-sd-netboot.tar.gz build/rpi-5-sd-netboot.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
 
-# build/rpi-sd.dd.gz is the rpi sd card image file
-build/rpi-sd.dd.gz: .date_files/rpi_boot_builder_image
+# archive of SD-card files for enabling network boot on a raspberry pi 5
+build/rpi-5-sd-netboot.tar.gz: .date_files/rpi_boot_builder_image
 	@mkdir -p build
-	@docker run --rm --privileged -v /dev:/dev waltplatform/rpi-boot-builder > build/rpi-sd.dd.gz
+	@docker run --rm waltplatform/rpi-boot-builder rpi5 > build/rpi-5-sd-netboot.tar.gz
 
-# to get only the files that should be replaced on the sd card partition
-# (useful when debugging), use build/rpi-sd-files.tar.gz
+# archive of SD-card files for enabling network boot on a raspberry pi 4
+build/rpi-4-sd-netboot.tar.gz: .date_files/rpi_boot_builder_image
+	@mkdir -p build
+	@docker run --rm waltplatform/rpi-boot-builder rpi4 > build/rpi-4-sd-netboot.tar.gz
+
+# archive of SD-card files for older generation Raspberry pi boards
 build/rpi-sd-files.tar.gz: .date_files/rpi_boot_builder_image
 	@mkdir -p build
-	@docker run --rm --privileged -v /dev:/dev waltplatform/rpi-boot-builder --tar > build/rpi-sd-files.tar.gz
+	@docker run --rm waltplatform/rpi-boot-builder old > build/rpi-sd-files.tar.gz
 
 # rpi build process involves the following docker image creation
 .date_files/rpi_boot_builder_image: rpi/create_rpi_boot_builder_image.sh rpi/Dockerfile rpi/builder_files
