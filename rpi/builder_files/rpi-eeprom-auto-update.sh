@@ -17,7 +17,7 @@ then
     # replace BOOT_ORDER with the value we want
     sed -i -e "s/BOOT_ORDER=.*/BOOT_ORDER=$BOOT_ORDER/" /tmp/bootconf.txt
 else
-    # BOOT_ORDER not defined yet, insert after first end-of-line   
+    # BOOT_ORDER not defined yet, insert after first end-of-line
     sed -i -e "0,/$/s//\nBOOT_ORDER=$BOOT_ORDER/" /tmp/bootconf.txt
 fi
 
