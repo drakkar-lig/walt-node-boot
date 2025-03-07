@@ -34,6 +34,7 @@ RUN cd /opt && mkdir boot_files_download && cd boot_files_download && \
 
 # Add static files to boot_files
 ADD builder_files/config.txt /opt/boot_files
+ADD builder_files/config-64.txt /opt/boot_files
 ADD builder_files/cmdline.txt /opt/boot_files
 ADD builder_files/README.walt /opt/boot_files
 

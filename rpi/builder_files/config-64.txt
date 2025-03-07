@@ -29,34 +29,20 @@ dtparam=poe_fan_temp3=78000,poe_fan_temp3_hyst=2000
 dtparam=watchdog=on
 
 # kernels (actually u-boot binaries)
-#
-# notes:
-# - pi1+ is not mentioned in the doc, so model rpi-b-plus
-#   might actually match the [pi1] section. however, in our case,
-#   both models point to the same u-boot binary.
-# - models >= 3B+ should be booted without a SD card (see
-#   "walt help show node-install"). however we include all u-boot
-#   binaries on SD cards (including 64bit variants) for experimentation
-#   purpose.
-# - we order models from newest to oldest, because we have seen
-#   a case where the firmware of the pi4 was not recognizing the [pi5] filter
-#   (which is understandable because the pi5 was probably not released yet
-#   when this firmware was flashed), so it was ignoring the filter and
-#   setting kernel variable to u-boot-rpi-5-b.img.
-#   By ordering this way, the [pi4] section will be read after this wrong
-#   assignment and override the kernel variable with the proper value.
-
+# Note: we order models from newest to oldest, because we have seen
+# a case where the firmware of the pi4 was not recognizing the [pi5] filter
+# (which is understandable because the pi5 was probably not released yet
+# when this firmware was flashed), so it was ignoring the filter and
+# setting kernel variable to u-boot-rpi-5-b.img.
+# By ordering this way, the [pi4] section will be read after this wrong
+# assignment and override the kernel variable with the proper value.
 [pi5]
 kernel=u-boot-rpi-5-b.img
 [pi4]
-kernel=u-boot-rpi-4-b.img
+kernel=u-boot-rpi-4-b-64b.img
 [pi3+]
-kernel=u-boot-rpi-3-b.img
+arm_64bit=1
+kernel=u-boot-rpi-3-b-64b.img
 [pi3]
-kernel=u-boot-rpi-3-b.img
-[pi2]
-kernel=u-boot-rpi-2-b.img
-[pi1+]
-kernel=u-boot-rpi-b.img
-[pi1]
-kernel=u-boot-rpi-b.img
+arm_64bit=1
+kernel=u-boot-rpi-3-b-64b.img
