@@ -13,7 +13,7 @@
 #   we fallback to the legacy procedure based on start.uboot.
 
 
-CONFIG_BOOTCOMMAND="setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; else reset; fi"
+CONFIG_BOOTCOMMAND="setenv scriptaddr 0x02400000; setenv fit_dl_addr 0x05000000; setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${fit_dl_addr} fit-start.uboot; then setenv fit_ready 1; source ${fit_dl_addr} || reset; else if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; fi; fi; reset"
 
 # Disallow interrupting the boot by pressing a key (value = -2).
 # When linking the serial line of two raspberry pi boards, for letting one board
