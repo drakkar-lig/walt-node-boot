@@ -29,16 +29,22 @@ dtparam=poe_fan_temp3=78000,poe_fan_temp3_hyst=2000
 dtparam=watchdog=on
 
 # kernels (actually u-boot binaries)
-# Note: we order models from newest to oldest, because we have seen
-# a case where the firmware of the pi4 was not recognizing the [pi5] filter
-# (which is understandable because the pi5 was probably not released yet
-# when this firmware was flashed), so it was ignoring the filter and
-# setting kernel variable to u-boot-rpi-5-b.img.
-# By ordering this way, the [pi4] section will be read after this wrong
-# assignment and override the kernel variable with the proper value.
+# Notes:
+# - We order models from newest to oldest, because we have seen
+#   a case where the firmware of the pi4 was not recognizing the [pi5] filter
+#   (which is understandable because the pi5 was probably not released yet
+#   when this firmware was flashed), so it was ignoring the filter and
+#   setting kernel variable to u-boot-rpi-5-b.img.
+#   By ordering this way, the [pi4] section will be read after this wrong
+#   assignment and override the kernel variable with the proper value.
+# - The official doc says that arm_64bit defaults to 1 for pi4, and to 0 for older
+#   models, but it seems that old firmwares on rpi4 did default to 0 (they were
+#   not booting our new rpi64 image with a 64-bit kernel unless explicitely
+#   setting arm_64bit=1 here.)
 [pi5]
 kernel=u-boot-rpi-5-b.img
 [pi4]
+arm_64bit=1
 kernel=u-boot-rpi-4-b-64b.img
 [pi3+]
 arm_64bit=1

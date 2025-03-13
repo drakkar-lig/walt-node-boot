@@ -49,6 +49,7 @@ dtparam=watchdog=on
 [pi5]
 kernel=u-boot-rpi-5-b.img
 [pi4]
+arm_64bit=0
 kernel=u-boot-rpi-4-b.img
 [pi3+]
 kernel=u-boot-rpi-3-b.img
