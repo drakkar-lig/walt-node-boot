@@ -49,6 +49,3 @@ kernel=u-boot-rpi-4-b-64b.img
 [pi3+]
 arm_64bit=1
 kernel=u-boot-rpi-3-b-64b.img
-[pi3]
-arm_64bit=1
-kernel=u-boot-rpi-3-b-64b.img
