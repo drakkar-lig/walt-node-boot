@@ -31,9 +31,13 @@ dtparam=watchdog=on
 # kernels (actually u-boot binaries)
 #
 # notes:
-# - pi1+ is not mentioned in the doc, so model rpi-b-plus
-#   might actually match the [pi1] section. however, in our case,
-#   both models point to the same u-boot binary.
+# - according to official docs:
+#   * both models 3B and 3B+ match [pi3] filter
+#   * but model 3B+ also matches [pi3+]
+#   * both models B and B+ match [pi1] filter
+#   * there is no [pi1+] filter in the doc
+#   Anyway models B and B+ share the same u-boot binary.
+#   And the same is true for models 3B+ and 3B.
 # - models >= 3B+ should be booted without a SD card (see
 #   "walt help show node-install"). however we include all u-boot
 #   binaries on SD cards (including 64bit variants) for experimentation
@@ -41,8 +45,9 @@ dtparam=watchdog=on
 # - we order models from newest to oldest, because we have seen
 #   a case where the firmware of the pi4 was not recognizing the [pi5] filter
 #   (which is understandable because the pi5 was probably not released yet
-#   when this firmware was flashed), so it was ignoring the filter and
-#   setting kernel variable to u-boot-rpi-5-b.img.
+#   when this firmware was flashed), so it was ignoring the filter, which
+#   had the effect of staying in the implicit [all] section started at the
+#   beginning of the file, and setting kernel variable to u-boot-rpi-5-b.img.
 #   By ordering this way, the [pi4] section will be read after this wrong
 #   assignment and override the kernel variable with the proper value.
 
@@ -57,7 +62,5 @@ kernel=u-boot-rpi-3-b.img
 kernel=u-boot-rpi-3-b.img
 [pi2]
 kernel=u-boot-rpi-2-b.img
-[pi1+]
-kernel=u-boot-rpi-b.img
 [pi1]
 kernel=u-boot-rpi-b.img
