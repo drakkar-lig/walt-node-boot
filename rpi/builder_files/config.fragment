@@ -1,8 +1,8 @@
 # The command must not contain double quotes, which is quite limitating.
 # Here are the steps we are doing:
 # - computing the node_model variable given the fact the fdtfile variable
-#   has the form "bcm<...>-<node_model>.dtb". <node_model> is for instance
-#   rpi-2-b or rpi-b-plus. Since it is not possible to use double quotes,
+#   has the form "bcm<...>-<node_model>[-rev[1-9]].dtb". <node_model> is for
+#   instance rpi-2-b or rpi-b-plus. Since it is not possible to use double quotes,
 #   we cannot write an empty replacement patterns (i.e, ""), but we leverage
 #   the fact all models start with a 'r' and end with a 'b', a 's' or a '0'
 #   (e.g, rpi-b, rpi-3-b-plus, rpi-400).
@@ -13,7 +13,7 @@
 #   we fallback to the legacy procedure based on start.uboot.
 
 
-CONFIG_BOOTCOMMAND="setenv scriptaddr 0x02400000; setenv fit_dl_addr 0x05000000; setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${fit_dl_addr} fit-start.uboot; then setenv fit_ready 1; source ${fit_dl_addr} || reset; else if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; fi; fi; reset"
+CONFIG_BOOTCOMMAND="setenv scriptaddr 0x02400000; setenv fit_dl_addr 0x05000000; setenv node_model $fdtfile; setexpr node_model sub [^-]*-r r; setexpr node_model sub -rev..dtb .dtb; setexpr node_model sub b.dtb b || setexpr node_model sub s.dtb s || setexpr node_model sub 0.dtb 0; setenv bootp_vci walt.node.$node_model; setenv has_fit 1; if dhcp ${fit_dl_addr} fit-start.uboot; then setenv fit_ready 1; source ${fit_dl_addr} || reset; else if dhcp ${scriptaddr} start.uboot; then source ${scriptaddr} || reset; fi; fi; reset"
 
 # Disallow interrupting the boot by pressing a key (value = -2).
 # When linking the serial line of two raspberry pi boards, for letting one board
