@@ -1,15 +1,15 @@
 
-all: build/rpi-sd-files.tar.gz build/rpi-4-sd-netboot.tar.gz build/rpi-5-sd-netboot.tar.gz build/tftp-static.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
+all: build/rpi-sd-files.tar.gz build/rpi-4-sd-recovery.tar.gz build/rpi-5-sd-recovery.tar.gz build/tftp-static.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
 
 # archive of SD-card files for enabling network boot on a raspberry pi 5
-build/rpi-5-sd-netboot.tar.gz: .date_files/rpi_boot_builder_image
+build/rpi-5-sd-recovery.tar.gz: .date_files/rpi_boot_builder_image
 	@mkdir -p build
-	@docker run --rm waltplatform/rpi-boot-builder rpi5 > build/rpi-5-sd-netboot.tar.gz
+	@docker run --rm waltplatform/rpi-boot-builder rpi5 > build/rpi-5-sd-recovery.tar.gz
 
 # archive of SD-card files for enabling network boot on a raspberry pi 4
-build/rpi-4-sd-netboot.tar.gz: .date_files/rpi_boot_builder_image
+build/rpi-4-sd-recovery.tar.gz: .date_files/rpi_boot_builder_image
 	@mkdir -p build
-	@docker run --rm waltplatform/rpi-boot-builder rpi4 > build/rpi-4-sd-netboot.tar.gz
+	@docker run --rm waltplatform/rpi-boot-builder rpi4 > build/rpi-4-sd-recovery.tar.gz
 
 # archive of SD-card files for older generation Raspberry pi boards
 build/rpi-sd-files.tar.gz: .date_files/rpi_boot_builder_image
