@@ -96,16 +96,35 @@ RUN ./rpi-eeprom-auto-update.sh \
 RUN ./rpi-eeprom-auto-update.sh \
     $RPI5_EEPROM_FIRMWARE $RPI5_EEPROM_RECOVERY_BIN /opt/recovery-rpi5
 
+# prepare tftp-static files
+RUN cd /opt && mkdir -p tftp-static/build
+WORKDIR /opt/tftp-static/build
+ADD builder_files/tftp-static/* ./
+RUN aarch64-linux-gnu-as -o reboot-rpi-64b.o reboot-rpi-64b.S
+RUN aarch64-linux-gnu-ld -T reboot-rpi-64b.ld \
+            -o reboot-rpi-64b.elf reboot-rpi-64b.o
+RUN aarch64-linux-gnu-objcopy -O binary reboot-rpi-64b.elf ../reboot-rpi-64b.img
+RUN mv config.txt ..
+WORKDIR /opt/boot_files
+RUN xargs cp -rp -t /opt/tftp-static < /opt/tftp-static/build/copied_files
+RUN rm -rf /opt/tftp-static/build
+
 # add release date file
-RUN date > /opt/boot_files/walt.date && \
-    date +%s >> /opt/boot_files/walt.date && \
-    cp /opt/boot_files/walt.date /opt/recovery-rpi4/ && \
-    cp /opt/boot_files/walt.date /opt/recovery-rpi5/
+RUN date > /opt/walt.date && \
+    date +%s >> /opt/walt.date && \
+    cp /opt/walt.date /opt/boot_files/ && \
+    cp /opt/walt.date /opt/recovery-rpi4/ && \
+    cp /opt/walt.date /opt/recovery-rpi5/ && \
+    cp /opt/walt.date /opt/tftp-static/
+
+# build archives
+RUN cd /opt/boot_files && tar cfz ../rpi-sd-files.tar.gz *
+RUN cd /opt/recovery-rpi4 && tar cfz ../rpi-4-sd-recovery.tar.gz *
+RUN cd /opt/recovery-rpi5 && tar cfz ../rpi-5-sd-recovery.tar.gz *
+RUN cd /opt && tar cf tftp-static.tar tftp-static && \
+	gzip --best tftp-static.tar
 
 # install entry point
 ADD builder_files/entrypoint.sh /entry_point.sh
 ENTRYPOINT ["/entry_point.sh"]
 CMD []
-
-# set workdir to /opt/boot_files
-WORKDIR /opt/boot_files

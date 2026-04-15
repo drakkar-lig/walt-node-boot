@@ -1,24 +1,10 @@
 
-all: build/rpi-sd-files.tar.gz build/rpi-4-sd-recovery.tar.gz build/rpi-5-sd-recovery.tar.gz build/tftp-static.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
+all: build/rpi/walt.date build/rpi/rpi-sd-files.tar.gz build/rpi/rpi-4-sd-recovery.tar.gz build/rpi/rpi-5-sd-recovery.tar.gz build/rpi/tftp-static.tar.gz build/pc-usb.dd.gz build/walt-x86-undionly.kpxe
 
-# archive of SD-card files for enabling network boot on a raspberry pi 5
-build/rpi-5-sd-recovery.tar.gz: .date_files/rpi_boot_builder_image
-	@mkdir -p build
-	@docker run --rm waltplatform/rpi-boot-builder rpi5 > build/rpi-5-sd-recovery.tar.gz
-
-# archive of SD-card files for enabling network boot on a raspberry pi 4
-build/rpi-4-sd-recovery.tar.gz: .date_files/rpi_boot_builder_image
-	@mkdir -p build
-	@docker run --rm waltplatform/rpi-boot-builder rpi4 > build/rpi-4-sd-recovery.tar.gz
-
-# archive of SD-card files for older generation Raspberry pi boards
-build/rpi-sd-files.tar.gz: .date_files/rpi_boot_builder_image
-	@mkdir -p build
-	@docker run --rm waltplatform/rpi-boot-builder old > build/rpi-sd-files.tar.gz
-
-# archive of files to be served by the walt server as part of new device handling
-build/tftp-static.tar.gz: rpi/create_tftp_static.sh build/rpi-sd-files.tar.gz
-	@./rpi/create_tftp_static.sh
+# network boot files and archives for raspberry pi boards
+build/rpi/%: .date_files/rpi_boot_builder_image
+	@mkdir -p build/rpi
+	@docker run --rm waltplatform/rpi-boot-builder $* > build/$*
 
 # rpi build process involves the following docker image creation
 .date_files/rpi_boot_builder_image: rpi/create_rpi_boot_builder_image.sh rpi/Dockerfile rpi/builder_files

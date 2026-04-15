@@ -1,0 +1,13 @@
+# This allows us to implement a boot loop, used when the WALT server is down
+# or the OS image is not ready.
+
+# The binary reboot-rpi-64b.img uses PSCI (Power State Coordination Interface) 
+# to trigger the reboot.
+# Enable the watchdog to reboot anyway if this fails.
+
+[all]
+# useful for rpi3b+ and rpi4
+arm_64bit=1
+# enable the watchdog to reboot anyway after ~15s if PSCI call fails
+dtparam=watchdog=on
+kernel=reboot-rpi-64b.img
