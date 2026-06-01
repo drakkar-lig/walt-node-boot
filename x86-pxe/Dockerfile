@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 
 # Making the process completely noninteractive
 ENV DEBIAN_FRONTEND noninteractive
@@ -15,9 +15,11 @@ ADD boot.ipxe /root/
 
 # Build ipxe with linux kernel image format
 WORKDIR /root
-RUN git clone git://git.ipxe.org/ipxe.git && cd ipxe && \
-    git checkout d79f504c0c390d40de3d27546ab27bc44b03516c
-RUN cd ipxe/src && make -j bin/undionly.kpxe EMBED=/root/boot.ipxe
+RUN git clone https://github.com/ipxe/ipxe.git && cd ipxe && \
+    git checkout v2.0.0
+WORKDIR /root/ipxe/src
+RUN nice make -j $(nproc) bin/undionly.kpxe EMBED=/root/boot.ipxe
+RUN nice make -j $(nproc) bin-x86_64-efi/snponly.efi EMBED=/root/boot.ipxe
 
 # Adding the entrypoint script to the image
 ADD entry_point.sh /root/
