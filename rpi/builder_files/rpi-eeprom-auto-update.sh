@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e -o pipefail
 rpi_eeprom_firmware="$1"
 rpi_eeprom_recovery_bin="$2"
 out_dir="$3"

@@ -3,7 +3,10 @@ MAINTAINER Etienne Duble <etienne.duble@imag.fr>
 ENV UBOOT_ARCHIVE_URL='https://github.com/u-boot/u-boot/archive/refs/tags/v2023.10.tar.gz'
 ENV RPI_BOOTFILES_GIT_REPO='https://github.com/raspberrypi/firmware'
 ENV RPI_BOOTFILES_GIT_COMMIT='a3b20e7dd41aa174ae50b872c8c9c66beafd63e2'
-ENV RPI_EEPROM_SVN_URL='https://github.com/raspberrypi/rpi-eeprom'
+ENV RPI_EEPROM_GIT_REPO='https://github.com/raspberrypi/rpi-eeprom'
+# note: the eeprom firmware files below are moved to an archive directory
+# when they get old, so we have to stick to a fixed repository commit.
+ENV RPI_EEPROM_GIT_COMMIT='ab4c1994f3c2edb1b45e003e5a59fc2ae1360ea4'
 ENV RPI4_EEPROM_FIRMWARE='firmware-2711/latest/pieeprom-2025-02-11.bin'
 ENV RPI4_EEPROM_RECOVERY_BIN='firmware-2711/latest/recovery.bin'
 ENV RPI5_EEPROM_FIRMWARE='firmware-2712/latest/pieeprom-2025-02-12.bin'
@@ -85,8 +88,10 @@ RUN git apply -v rpi5.patch && \
     ./compile-uboot.sh rpi-5-b rpi_arm64_defconfig
 
 # prepare rpi4 & rpi5 eeprom update files
-RUN cd /opt && git clone $RPI_EEPROM_SVN_URL ./rpi-eeprom && \
-    cd rpi-eeprom && \
+RUN cd /opt && mkdir rpi-eeprom && cd rpi-eeprom && \
+    git init && git remote add origin "$RPI_EEPROM_GIT_REPO" && \
+    git fetch --depth 1 origin "$RPI_EEPROM_GIT_COMMIT" && \
+    git checkout "$RPI_EEPROM_GIT_COMMIT" && \
     rm -rf .git
 WORKDIR /opt/rpi-eeprom
 ADD builder_files/rpi-eeprom-auto-update.sh .
