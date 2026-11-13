@@ -1,6 +1,6 @@
-FROM debian:bullseye as builder
+FROM debian:bookworm as builder
 MAINTAINER Etienne Duble <etienne.duble@imag.fr>
-ENV UBOOT_BZ2_ARCHIVE_URL='https://ftp.denx.de/pub/u-boot/u-boot-2023.10.tar.bz2'
+ENV UBOOT_ARCHIVE_URL='https://github.com/u-boot/u-boot/archive/refs/tags/v2023.10.tar.gz'
 ENV RPI_BOOTFILES_GIT_REPO='https://github.com/raspberrypi/firmware'
 ENV RPI_BOOTFILES_GIT_COMMIT='a3b20e7dd41aa174ae50b872c8c9c66beafd63e2'
 ENV RPI_EEPROM_SVN_URL='https://github.com/raspberrypi/rpi-eeprom'
@@ -15,7 +15,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 # install packages
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     vim net-tools procps subversion make gcc g++ libncurses5-dev bzip2 \
-    wget cpio python unzip bc kpartx dosfstools debootstrap debian-archive-keyring \
+    wget cpio python3 unzip bc kpartx dosfstools debootstrap debian-archive-keyring \
     git flex bison pkg-config zlib1g-dev libglib2.0-dev libgnutls28-dev \
     libpixman-1-dev gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu libssl-dev kmod \
     dpkg-dev debhelper bash-completion shellcheck rdfind fdisk && \
@@ -39,8 +39,8 @@ ADD builder_files/cmdline.txt /opt/boot_files
 ADD builder_files/README.walt /opt/boot_files
 
 # Compile 32bit u-boot versions
-RUN cd /opt && wget -q $UBOOT_BZ2_ARCHIVE_URL && tar xf u-boot* && \
-                rm u-boot*.bz2 && mv u-boot* u-boot
+RUN cd /opt && wget -q -O u-boot.tar.gz $UBOOT_ARCHIVE_URL && \
+                tar xf u-boot.tar.gz && rm u-boot.tar.gz && mv u-boot-* u-boot
 WORKDIR /opt/u-boot
 ADD builder_files/config.fragment .
 ADD builder_files/config-debug.fragment .
